@@ -34,7 +34,7 @@ const routes = [{
             },
             {
                 name: 'DashboardWelcomeALisNoticia',
-                path: '/dashboard/welcome/listarnotice',
+                path: '/dashboard/welcome/listaNoticia',
                 component: () => import ('../views/listar/listarNoticias.vue')
 
             },
