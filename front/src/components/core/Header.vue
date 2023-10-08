@@ -25,18 +25,18 @@
         <span v-bind="attrs" v-on="on" style="cursor: pointer" class="mx-5 mr-10">
           <!-- Imagen de perfil -->
           <v-avatar size="40">
-            <img src="https://media.licdn.com/dms/image/D4E03AQFEd30hUG5bbQ/profile-displayphoto-shrink_800_800/0/1682819137100?e=2147483647&v=beta&t=GlRmWrlXnSvIiTUe3bk_QLveYgoxJ323zinvRAd0sXE" />
+            <img src="https://i.pravatar.cc/300" />
           </v-avatar>
         </span>
       </template>
       <v-list dense>
-        <v-list-item-group v-model="selectedItem" color="primary">
-          <v-list-item v-for="(item, i) in items" :key="i">
+        <v-list-item-group color="primary">
+          <v-list-item v-for="item in items" :key="item.id" @click="handleItemClick(item)">
             <v-list-item-icon>
-              <v-icon v-text="item.icon"></v-icon>
+              <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title v-text="item.text" @click="handleItemClick(item)"></v-list-item-title>
+              <v-list-item-title>{{ item.text }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list-item-group>
@@ -63,10 +63,8 @@ export default {
     },
     handleItemClick(item) {
       if (item.text ==='Salir') {
-         
-        console.log("Salir");
-
-      }else{
+        this.$router.push('/');
+      }else if(item.text ==='Perfil'){
         this.$router.push('/perfil');
       }
     },
