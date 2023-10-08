@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const { Controller } = require("./Controller");
+const People = require("./models/People");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
@@ -187,6 +188,41 @@ app.delete("/peoples/:id", function(req, res) {
         const id = req.params.id;
         Controller.deletePeople(id, res);
     })
+    /* /-------------------------people petitions------------------------- */
+app.put("/peoplesState", function(req, res) {
+    let ruta = {
+        "icon": "pe-7s-note2",
+        "title": "Noticias",
+        "child": [
+            {
+                "title": "Crear",
+                "href": "/dashboard/welcome/creanotice"
+            },
+            {
+                "href": "/dashboard/welcome/listarnotice",
+                "title": "Lista"
+            }
+        ]
+    }
+    const {_id, isRedactor, isEditor} = req.body;
+
+   if(_id){
+    People.findByIdAndUpdate(_id, {isRedactor, isEditor}, {new:true}, (err, doc)=>{
+        if(err){
+             console.log(err)
+        }
+        res.send({message:"usuario actualizado"})
+  })
+   }else{
+         res.send({message:"error"})
+   }
+   
+   
+        
+})
+
+
+
     /* /-------------------------role petitions------------------------- */
 
 

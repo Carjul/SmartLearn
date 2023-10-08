@@ -221,10 +221,10 @@
                               <td style="background-color:rgba(128, 128, 128, 0.329);">{{ roles.username }}</td>
                               <td style="background-color:rgba(128, 128, 128, 0.329);">{{ roles.password }}</td>
                               <td style="background-color:rgba(128, 128, 128, 0.329);">
-                                  <input type="checkbox" v-model="Redactor" @change="sendData" />
+                                  <input type="checkbox" v-model="roles.isRedactor" @change="sendData(roles)" />
                               </td>
                               <td style="background-color:rgba(128, 128, 128, 0.329);">
-                                  <input type="checkbox" v-model="Editor" @change="sendData" />
+                                  <input type="checkbox" v-model="roles.isEditor" @change="sendData(roles)" />
                               </td>
                               <td style="border-top-right-radius:40px;background-color:rgba(128, 128, 128, 0.329);">
                                 <button @click="editar(index)"><b-icon icon="pen-fill" font-scale="2"
@@ -399,8 +399,6 @@ export default {
 
   data() {
     return {
-      Redactor: false,
-      Editor: false,
       pantalla: null,
       search: '',
       input1: null,
@@ -470,9 +468,16 @@ export default {
   },
   methods: {
 
-    sendData(){
-      console.log(this.Redactor)
-      console.log(this.Editor)
+    sendData(params){
+       if(params){
+
+         this.axios.put('http://localhost:3001/peoplesState' , params)
+         .then((response) => {
+          console.log(response)
+          this.cargar()
+        })
+
+        }
     },
 
     vuelveInicio() {
@@ -539,7 +544,6 @@ export default {
     cargar() {
       this.axios.get('http://localhost:3001/peoples')
         .then((response) => {
-          console.log(response)
           /*   for (let i = 0; i < response.data.length; i++) {
             if(this.pantalla==1 && response.data[i].rol=='Docente'){
               this.items.push(response.data[i]);
@@ -549,7 +553,7 @@ export default {
             }
               
              }*/
-             console.log(response.data)
+      
           this.items = response.data;
 
         })

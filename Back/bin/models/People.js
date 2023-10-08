@@ -11,8 +11,8 @@ const PeopleSchema = new Schema({
     gender: String,
     username: String,
     password: String,
-    redactor: Boolean,
-    editor: Boolean,
+    isRedactor: Boolean,
+    isEditor: Boolean,
     asignatures: [{
         _id: {
             type: Schema.Types.ObjectId,
