@@ -1,15 +1,11 @@
 const mongoose = require('mongoose')
-const NoticiasStado = new mongoose.Schema({
-    estado:{
+const NoticiasStado = new mongoose.Schema({ 
+description:{
         type: String,
         required: true
-    },
-    identificador:{
-        type: String,
-        required: true
-    },
+    }
 })
 
 
-var NoticeState = mongoose.model('estados', NoticiasStado)
+var NoticeState = mongoose.model('estado', NoticiasStado)
 module.exports = NoticeState;

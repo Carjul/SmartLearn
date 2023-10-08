@@ -105,7 +105,7 @@
       </v-card>
     </v-menu>
   </div>
-</template>
+</template><!--  -->
 
 <script>
   // Mixins

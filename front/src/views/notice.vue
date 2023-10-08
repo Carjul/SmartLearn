@@ -5,31 +5,13 @@
         <v-col class="col-11.5 mx-4">
           <v-row class="border">
             <v-col>
-              <v-carousel
-                cycle
-                height="300"
-                hide-delimiters
-                show-arrows-on-hover
-              >
+              <v-carousel cycle height="300" hide-delimiters show-arrows-on-hover>
                 <!-- Slide para cada una de las 5 noticias más recientes -->
-                <v-carousel-item
-                  v-for="notices in latestNotices"
-                  :key="notices.id"
-                >
-                  <v-card
-                    @click="openModal(notices)"
-                    hover
-                    color="light-blue lighten-5"
-                    outlined
-                    class="latest-notice"
-                  >
+                <v-carousel-item v-for="notices in latestNotices" :key="notices.id">
+                  <v-card @click="openModal(notices)" hover color="light-blue lighten-5" outlined class="latest-notice">
                     <v-row no-gutters class="cols-2 mx-auto">
                       <v-col class="col-5 contenedor" sm="8" md="5">
-                        <v-img 
-                        class="imagen"
-                        :src="notices.images"
-                       
-                        ></v-img>
+                        <v-img class="imagen" :src="notices.images"></v-img>
                       </v-col>
                       <v-col class="col-7">
                         <v-card-title class="text-uppercase text-justify">{{
@@ -54,20 +36,11 @@
           </v-row>
 
           <v-row class="my-4 border">
-            <v-card
-              max-width="270"
-              hover
-              outlined
-              v-for="notice in getNoticesFile"
-              :key="notice._id"
-              class="notice-card my-2 mx-auto"
-            >
+            <v-card max-width="270" hover outlined v-for="notice in getNoticesFile" :key="notice._id"
+              class="notice-card my-2 mx-auto">
               <v-img height="150px" :src="notice.images"></v-img>
 
-              <v-card-title
-                class="text-uppercase text-justify text-subtitle-2"
-                >{{ notice.title }}</v-card-title
-              >
+              <v-card-title class="text-uppercase text-justify text-subtitle-2">{{ notice.title }}</v-card-title>
               <v-card-subtitle class="text-caption">
                 <p class="my-0 py-0">
                   {{ notice.autor }} / {{ notice.category }} / {{ notice.time }}
@@ -75,8 +48,7 @@
               </v-card-subtitle>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn @click="openModal(notice)" text color="orange lighten-2"
-                  >Ver mas...
+                <v-btn @click="openModal(notice)" text color="orange lighten-2">Ver mas...
                 </v-btn>
                 <!-- <v-btn @click="eliminarNoticia(notice._id)">
                   <v-icon>mdi-delete</v-icon></v-btn
@@ -85,27 +57,14 @@
             </v-card>
           </v-row>
 
-          <v-snackbar
-            v-model="hasSaved"
-            :timeout="5000"
-            absolute
-            bottom
-            center
-            color="green"
-          >
+          <v-snackbar v-model="hasSaved" :timeout="5000" absolute bottom center color="green">
             {{ msg }}
           </v-snackbar>
-          <v-dialog
-            transition="dialog-bottom-transition"
-            v-model="modalVisible"
-          >
+          <v-dialog transition="dialog-bottom-transition" v-model="modalVisible">
             <v-card>
               <v-toolbar class="hidden-xs-only">
-                <v-btn  icon @click="closeModal" 
-                  ><v-icon>mdi-close-circle</v-icon></v-btn
-                  
-                >
-               <!--  <v-btn  icon>
+                <v-btn icon @click="closeModal"><v-icon>mdi-close-circle</v-icon></v-btn>
+                <!--  <v-btn  icon>
         <v-icon class="mr-0">mdi-close-circle</v-icon>
       </v-btn>
       <v-btn icon class="mr-0">
@@ -117,31 +76,22 @@
               <v-container class="grey lighten-5">
                 <v-row align="center">
                   <v-col>
-                    <v-card-title
-                      class="text-uppercase text-h4 align-center justify-center"
-                      >{{
-                        selectedNotice ? selectedNotice.title : ""
-                      }}</v-card-title
-                    >
+                    <v-card-title class="text-uppercase text-h4 align-center justify-center">{{
+                      selectedNotice ? selectedNotice.title : ""
+                    }}</v-card-title>
                   </v-col>
                 </v-row>
                 <v-row no-gutters>
                   <v-col cols="10" sm="6">
-                    <img
-                      style="max-width: 100%; max-height: 600px"
-                      class="content"
-                      :src="selectedNotice ? selectedNotice.images : ''"
-                    />
+                    <img style="max-width: 100%; max-height: 600px" class="content"
+                      :src="selectedNotice ? selectedNotice.images : ''" />
                   </v-col>
-                  <v-col  cols="auto" >
+                  <v-col cols="auto">
                     <v-card width="580" height="327" class="overflow-auto">
-        <v-card-text>
-            <div
-                      class="content"
-                      v-html="selectedNotice ? selectedNotice.content : ''"
-                    ></div>
-        </v-card-text>
-      </v-card>
+                      <v-card-text>
+                        <div class="content" v-html="selectedNotice ? selectedNotice.content : ''"></div>
+                      </v-card-text>
+                    </v-card>
 
                   </v-col>
                 </v-row>
@@ -179,6 +129,7 @@ export default {
   data: () => ({
     hasSaved: false,
     msg: "",
+    Estados: [],
     getNoticesFile: [],
     latestNoticeFromData: null,
     modalVisible: false, // Controla la visibilidad del modal
@@ -186,8 +137,7 @@ export default {
   }),
 
   mounted() {
-    this.getNotices();
-    console.log("aqui",this.$store.state.userData);
+    this.getestado()
   },
 
   computed: {
@@ -214,7 +164,7 @@ export default {
     },
 
     eliminarNoticia(id) {
-      // Lógica para eliminar la noticia en el backend y MongoDB
+      // Lógica para eliminar la noticia en el backend NoticePublica MongoDB
       axios
         .delete(`http://localhost:3001/deletenotices/${id}`)
         .then((response) => {
@@ -229,14 +179,19 @@ export default {
           console.error(error.response.data.error);
         });
     },
-
+    async getestado() {
+      const Estado = await axios.post(`http://localhost:3001/estadoNoticia`)
+      this.Estados = Estado.data
+      this.getNotices();
+    },
     // Obtenr el paquete de Notices del Mongodb
     async getNotices() {
       try {
         const response = await axios.get("http://localhost:3001/notices");
-        this.getNoticesFile = response.data.reverse();
+        let filtropublicado = this.Estados?.find(e => e.description === "publicado")
+        let NoticePublica = response.data?.filter(element => element.estado[0] !== undefined && element.estado[0] === filtropublicado._id);
+        this.getNoticesFile = NoticePublica?.reverse();
         this.latestNoticeFromData = this.latestNotice; // Actualizar la noticia más reciente en data
-        console.log(this.getNoticesFile);
       } catch (error) {
         console.error(error);
       }
@@ -245,13 +200,11 @@ export default {
 };
 </script>
 <style scoped>
-
-
 .content img {
   margin: 10;
   width: 100px;
   height: 100px;
-  
+
 }
 
 .contenedor {
@@ -265,6 +218,4 @@ export default {
   height: 100%;
   object-fit: cover;
 }
-
-
 </style>

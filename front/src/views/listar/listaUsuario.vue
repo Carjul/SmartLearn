@@ -202,8 +202,9 @@
                               <th scope="col">Sexo</th>
                               <th scope="col">Usuario</th>
                               <th scope="col">Contraseña</th>
+                              <th scope="col">Redactor</th>
+                              <th scope="col">Editor</th>
                               <th scope="col">Accion</th>
-                              <th scope="col">NoticeRol</th>
                               <!--   <th scope="col">Menu</th>
       <th scope="col">Rutas</th>-->
 
@@ -219,6 +220,12 @@
                               <td style="background-color:rgba(128, 128, 128, 0.329);">{{ roles.gender }}</td>
                               <td style="background-color:rgba(128, 128, 128, 0.329);">{{ roles.username }}</td>
                               <td style="background-color:rgba(128, 128, 128, 0.329);">{{ roles.password }}</td>
+                              <td style="background-color:rgba(128, 128, 128, 0.329);">
+                                  <input type="checkbox" v-model="Redactor" @change="sendData" />
+                              </td>
+                              <td style="background-color:rgba(128, 128, 128, 0.329);">
+                                  <input type="checkbox" v-model="Editor" @change="sendData" />
+                              </td>
                               <td style="border-top-right-radius:40px;background-color:rgba(128, 128, 128, 0.329);">
                                 <button @click="editar(index)"><b-icon icon="pen-fill" font-scale="2"
                                     variant="success"></b-icon></button>
@@ -227,17 +234,7 @@
                                     font-scale="2" style="color:rgba(243, 71, 71, 0.719)"></b-icon></button>
 
                               </td>
-                              <td style="background-color:rgba(128, 128, 128, 0.329);">
-                                <label>
-                                  <input type="checkbox" v-model="Redactor" @change="sendData" />
-                                  Redactor
-                                </label>
-                                <br />
-                                <label>
-                                  <input type="checkbox" :v-model="roles.isEditor" @change="sendData" />
-                                  Editor
-                                </label>
-                              </td>
+                              
                            
                             </tr>
                           </tbody>

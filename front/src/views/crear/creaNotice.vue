@@ -2,8 +2,6 @@
 <template>
     <div>
 
-
-
         <v-container class="body-component">
             <v-row>
                 <v-col>
@@ -28,7 +26,10 @@
                         <v-row>
                             <v-col cols="4" md="4">
                                 <v-text-field v-model="noticeFile.autor" prepend-icon="mdi-account" :rules="authorRules"
-                                    label="Autor"></v-text-field>
+                                    label="Autor"
+                                    disabled
+                                    ></v-text-field>
+                                   
                             </v-col>
 
                             <v-col cols="4">
@@ -63,8 +64,6 @@
 
                                 <v-snackbar v-model="snackbar" :timeout="timeout" centered tile outlined color="success">
                                     {{ text }}
-
-
                                 </v-snackbar>
                             </v-col>
                         </v-row>
@@ -94,14 +93,17 @@ export default {
         text: 'Noticia guardada correctamente... :D',
         timeout: 2000,
         loading: false,
+        user:{},
         noticeFile: {
             title: "",
             autor: "",
+            idAutor:"",
             category: "",
             time: null,
             abstract: "",
             content: "",
             images: "",
+            estado: "redactado"
         },
         getNoticesFile: [],
         latestNoticeFromData: null,
@@ -114,6 +116,8 @@ export default {
     mounted() {
         const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
         this.noticeFile.time = new Date().toLocaleString(undefined, options);
+        this.user= this.$store.state.userData
+        this.noticeFile.autor = this.user.name + " " + this.user.last_name
     },
 
     computed: {
@@ -132,7 +136,6 @@ export default {
         },
         clearForm() {
             this.noticeFile.title = '';
-            this.noticeFile.autor = '';
             this.noticeFile.category = '';
             this.noticeFile.abstract = '';
             this.noticeFile.content = '';
@@ -178,11 +181,13 @@ export default {
                     let paquete = {
                         title: this.noticeFile.title,
                         autor: this.noticeFile.autor,
+                        idAutor: this.user?._id,
                         category: this.noticeFile.category,
                         time: this.noticeFile.time,
                         abstract: this.noticeFile.abstract,
                         content: this.noticeFile.content,
-                        images: response.data.nU
+                        images: response.data.nU,
+                        estado: this.noticeFile.estado
                     }
                     await axios.post('http://localhost:3001/notice', paquete).then(response => {
                         this.snackbar = true;

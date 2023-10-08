@@ -9,6 +9,7 @@ const ManagerMicroClases = require("../bin/models/MicroClasesA");
 const Area = require("../bin/models/Area");
 const School = require("../bin/models/School");
 const Role = require("../bin/models/Role");
+const NoticeState = require("../bin/models/NoticiaEstado");
 const ExerciseType = require("./models/ExerciseType");
 const Resource = require("./models/Resource");
 const SendExercise = require("./models/SendExercise");
@@ -21,16 +22,18 @@ class Controller {
         this.connect();
     }
 
-    createNotice(notice, res) {
-        Notice.create(notice)
-            .then(newnotice => {
-                res.send({ status: 200, nU: newnotice });
-                console.log("Crear en Mongodb");
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).send("Error al crear la noticia");
-            });
+    async createNotice(notice, res) {
+        const estadoN = await NoticeState.findOne({ description: notice.estado });
+        const userN= await People.findById(notice.idAutor)
+       if(estadoN && userN){
+        notice.estado = estadoN._id;
+        notice.idAutor = userN._id;
+        const newNotice = new Notice(notice)
+        await newNotice.save();
+        res.send({ status: 200, nU: newNotice});
+       }else{
+        res.send({ status: 500, nU:{error:"user o estodo invalido"} });
+       }
     }
 
     //READ
@@ -38,7 +41,6 @@ class Controller {
         Notice.find({})
             .then(notices => {
                 res.send(notices);
-                console.log(notices);
             })
             .catch(err => {
                 console.error(err);
@@ -71,59 +73,58 @@ class Controller {
 
     /* autenticación */
     async getAuth(people, res) {
-            let { username, password } = people;
+        let { username, password } = people;
 
-            await People.find({ username })
-                /*  .populate({
-                                path: "asignatures",
-                                populate: { path: "_id_asignatura", model: "Area" },
-                                populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
-                            })*/
-                .then(async(people) => {
-                    console.log(people);
+        await People.find({ username })
+            /*  .populate({
+                            path: "asignatures",
+                            populate: { path: "_id_asignatura", model: "Area" },
+                            populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
+                        })*/
+            .then(async (people) => {
 
-                    if (people.length === 0) {
-                        res.status(500).send("Usuario invalido");
-                    } else {
-                        if (password == people[0].password) {
-                            var r = 0;
-                            var asign = [];
-                            const date = await this.getActividadEstudent(people[0]._id);
+                if (people.length === 0) {
+                    res.status(500).send("Usuario invalido");
+                } else {
+                    if (password == people[0].password) {
+                        var r = 0;
+                        var asign = [];
+                        const date = await this.getActividadEstudent(people[0]._id);
 
-                            for (let k of date.asignatures) {
-                                var v = k.Actividades.filter((ele) => {
-                                    return ele._id_state == "1";
-                                });
+                        for (let k of date.asignatures) {
+                            var v = k.Actividades.filter((ele) => {
+                                return ele._id_state == "1";
+                            });
 
-                                var obj = JSON.parse(JSON.stringify(date.asignatures[r]));
+                            var obj = JSON.parse(JSON.stringify(date.asignatures[r]));
 
-                                obj.activa = v.length;
-                                asign.push(obj);
-                                r += 1;
-                            }
-                            var final = JSON.parse(JSON.stringify(date));
-                            final.asignatures = asign;
-                            res.status(200).send(final);
-                        } else res.status(500).send("Usuario invalido");
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                    res.status(500).send(error);
-                });
-        }
-        /* autenticación */
+                            obj.activa = v.length;
+                            asign.push(obj);
+                            r += 1;
+                        }
+                        var final = JSON.parse(JSON.stringify(date));
+                        final.asignatures = asign;
+                        res.status(200).send(final);
+                    } else res.status(500).send("Usuario invalido");
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+                res.status(500).send(error);
+            });
+    }
+    /* autenticación */
 
     /* area */
     setArea(area, res) {
-        Area.create(area, function(err, newArea) {
+        Area.create(area, function (err, newArea) {
             if (err) throw err;
             res.send({ status: 200, nU: newArea });
         });
     }
 
     getAreas(res) {
-        Area.find({}, function(err, area) {
+        Area.find({}, function (err, area) {
             if (err) throw err;
             res.send(area);
         });
@@ -132,13 +133,13 @@ class Controller {
     updateArea(area, res) {
         let { id, name, code, teacher_id, course_id } = area;
         Area.updateOne({ _id: id }, {
-                $set: {
-                    name: name,
-                    code: code,
-                    teacher_id: teacher_id,
-                    course_id: course_id,
-                },
-            })
+            $set: {
+                name: name,
+                code: code,
+                teacher_id: teacher_id,
+                course_id: course_id,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "Area update", raw: rawResponse });
             })
@@ -148,16 +149,16 @@ class Controller {
     }
 
     deleteArea(id, res) {
-            Area.deleteOne({ _id: id }, function(err) {
-                if (err) throw err;
-                res.send({ message: "Area has been deleted" });
-            });
-        }
-        /* area */
+        Area.deleteOne({ _id: id }, function (err) {
+            if (err) throw err;
+            res.send({ message: "Area has been deleted" });
+        });
+    }
+    /* area */
 
     /* People */
     setPeople(people, res) {
-        People.create(people, function(err, newPeople) {
+        People.create(people, function (err, newPeople) {
             if (err) throw err;
             res.send({ status: 200, nU: newPeople });
         });
@@ -192,15 +193,15 @@ class Controller {
     updatePeople(people, res) {
         let { id, name, last_name, gender, rol, username, password } = people;
         People.updateOne({ _id: id }, {
-                $set: {
-                    name: name,
-                    last_name: last_name,
-                    gender: gender,
-                    rol: rol,
-                    username: username,
-                    password: password,
-                },
-            })
+            $set: {
+                name: name,
+                last_name: last_name,
+                gender: gender,
+                rol: rol,
+                username: username,
+                password: password,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "People updated", raw: rawResponse });
             })
@@ -210,16 +211,16 @@ class Controller {
     }
 
     deletePeople(id, res) {
-            People.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "People has been deleted" });
-            });
-        }
-        /* people */
+        People.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "People has been deleted" });
+        });
+    }
+    /* people */
 
     /*------------------------------------CRUD ROL------------------------------------*/
     setRole(role, res) {
-        Role.create(role, function(err, newRole) {
+        Role.create(role, function (err, newRole) {
             if (err) throw err;
             res.send({ status: 200, nU: newRole });
         });
@@ -255,7 +256,7 @@ class Controller {
     /*------------------------------------CRUD COURSE------------------------------------*/
     //CREATE
     setCourse(course, res) {
-        Course.create(course, function(err, newCourse) {
+        Course.create(course, function (err, newCourse) {
             if (err) throw err;
             res.send({ status: 200, nU: newCourse });
         });
@@ -290,18 +291,18 @@ class Controller {
 
     //DELETE
     deleteCourse(id, res) {
-            Course.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Course has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD COURSE/*------------------------------------*/
+        Course.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Course has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD COURSE/*------------------------------------*/
 
     /*------------------------------------CRUD EXERCISE------------------------------------*/
     //CREATE
     async setExerciseEstudiante(exercise, res) {
         const { id_actividad, people_id, archivo, id_asignatura, dia, curso } =
-        exercise;
+            exercise;
 
         var actua = null;
 
@@ -420,7 +421,7 @@ class Controller {
         final = moment.utc(final).tz("America/Bogota");
         exercise.deliveryDateFinal = final;
 
-        await Exercise.create(exercise, function(err, newActivi) {
+        await Exercise.create(exercise, function (err, newActivi) {
             if (err) throw err;
 
             console.log(newActivi);
@@ -457,26 +458,26 @@ class Controller {
                     populate: { path: "people_id", model: "People" },
                 },
             })
-            .then(async(exercise) => {
+            .then(async (exercise) => {
                 res.send({ exercise });
             });
     }
 
     async setCalificacionExcersice(paq, res) {
-            console.log("paquete" + JSON.stringify(paq));
-            const { id_actividad, curso, trabajos } = paq;
-            var actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $set: { "enviados.$[perf].trabajos": trabajos } }, {
-                arrayFilters: [{ "perf.curso": { $eq: curso } }],
-            });
-            res.send({ actua });
-        }
-        /*
-                      Exercise.find({ people_id: id }, (err, exercise) => {
-                          if (err) throw err;
-                          res.send({  exercise });
-                      });
-                  }
-              */
+        console.log("paquete" + JSON.stringify(paq));
+        const { id_actividad, curso, trabajos } = paq;
+        var actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $set: { "enviados.$[perf].trabajos": trabajos } }, {
+            arrayFilters: [{ "perf.curso": { $eq: curso } }],
+        });
+        res.send({ actua });
+    }
+    /*
+                  Exercise.find({ people_id: id }, (err, exercise) => {
+                      if (err) throw err;
+                      res.send({  exercise });
+                  });
+              }
+          */
 
     //UPDATE
     updateExercise(exercise, res) {
@@ -493,18 +494,18 @@ class Controller {
             people_id,
         } = exercise;
         Exercise.updateOne({ _id: id }, {
-                $set: {
-                    task_asignature: task_asignature,
-                    topic: topic,
-                    task_type: task_type,
-                    task_title: task_title,
-                    task_description: task_description,
-                    deliveryDateInicial: deliveryDateInicial,
-                    deliveryDateFinal: deliveryDateFinal,
-                    task_status: task_status,
-                    people_id: people_id,
-                },
-            })
+            $set: {
+                task_asignature: task_asignature,
+                topic: topic,
+                task_type: task_type,
+                task_title: task_title,
+                task_description: task_description,
+                deliveryDateInicial: deliveryDateInicial,
+                deliveryDateFinal: deliveryDateFinal,
+                task_status: task_status,
+                people_id: people_id,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "Exercise updated", raw: rawResponse });
             })
@@ -515,17 +516,17 @@ class Controller {
 
     //DELETE
     deleteExercise(id, res) {
-            Exercise.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Exercise has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD EXERCISE/*------------------------------------*/
+        Exercise.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Exercise has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD EXERCISE/*------------------------------------*/
 
     /*------------------------------------CRUD AREA------------------------------------*/
     //CREATE
     setArea(area, res) {
-        Area.create(area, function(err, newArea) {
+        Area.create(area, function (err, newArea) {
             if (err) throw err;
             res.send({ status: 200, nU: newArea });
         });
@@ -560,17 +561,17 @@ class Controller {
 
     //DELETE
     deleteArea(id, res) {
-            Area.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Area has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD AREA/*------------------------------------*/
+        Area.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Area has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD AREA/*------------------------------------*/
 
     /*------------------------------------CRUD SCHOOL------------------------------------*/
     //CREATE
     setSchool(school, res) {
-        School.create(school, function(err, newSchool) {
+        School.create(school, function (err, newSchool) {
             if (err) throw err;
             res.send({ status: 200, nU: newSchool });
         });
@@ -595,15 +596,15 @@ class Controller {
     updateSchool(school, res) {
         let { id, name, nit, courses, contact, grade, direction } = school;
         School.updateOne({ _id: id }, {
-                $set: {
-                    name: name,
-                    nit: nit,
-                    courses: courses,
-                    contact: contact,
-                    grade: grade,
-                    direction: direction,
-                },
-            })
+            $set: {
+                name: name,
+                nit: nit,
+                courses: courses,
+                contact: contact,
+                grade: grade,
+                direction: direction,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "Period updated", raw: rawResponse });
             })
@@ -614,17 +615,17 @@ class Controller {
 
     //DELETE
     deleteSchool(id, res) {
-            School.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Period has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD SCHOOL/*------------------------------------*/
+        School.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Period has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD SCHOOL/*------------------------------------*/
 
     /*------------------------------------CRUD EXERCISETYPE------------------------------------*/
     //CREATE
     setExerciseType(exerciseType, res) {
-        ExerciseType.create(exerciseType, function(err, newExerciseType) {
+        ExerciseType.create(exerciseType, function (err, newExerciseType) {
             if (err) throw err;
             res.send({ status: 200, nU: newExerciseType });
         });
@@ -659,17 +660,17 @@ class Controller {
 
     //DELETE
     deleteExerciseType(id, res) {
-            ExerciseType.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Exercise type has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD EXERCISETYPE/*------------------------------------*/
+        ExerciseType.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Exercise type has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD EXERCISETYPE/*------------------------------------*/
 
     /*------------------------------------CRUD EXERCISETYPE------------------------------------*/
     //CREATE
     setExerciseType(exerciseType, res) {
-        ExerciseType.create(exerciseType, function(err, newExerciseType) {
+        ExerciseType.create(exerciseType, function (err, newExerciseType) {
             if (err) throw err;
             res.send({ status: 200, nU: newExerciseType });
         });
@@ -704,17 +705,17 @@ class Controller {
 
     //DELETE
     deleteExerciseType(id, res) {
-            ExerciseType.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Exercise type has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD EXERCISETYPE/*------------------------------------*/
+        ExerciseType.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Exercise type has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD EXERCISETYPE/*------------------------------------*/
 
     /*------------------------------------CRUD RESOURCE------------------------------------*/
     //CREATE
     setResource(resource, res) {
-        Resource.create(resource, function(err, newResource) {
+        Resource.create(resource, function (err, newResource) {
             if (err) throw err;
             res.send({ status: 200, nU: newResource });
         });
@@ -739,13 +740,13 @@ class Controller {
     updateResource(resource, res) {
         let { id, title, name, resource_type, people_id } = resource;
         Resource.updateOne({ _id: id }, {
-                $set: {
-                    title: title,
-                    name: name,
-                    resource_type: resource_type,
-                    people_id: people_id,
-                },
-            })
+            $set: {
+                title: title,
+                name: name,
+                resource_type: resource_type,
+                people_id: people_id,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "Resource type updated", raw: rawResponse });
             })
@@ -756,17 +757,17 @@ class Controller {
 
     //DELETE
     deleteResource(id, res) {
-            Resource.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Resource type has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD RESOURCE/*------------------------------------*/
+        Resource.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Resource type has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD RESOURCE/*------------------------------------*/
 
     /*------------------------------------CRUD SEND EXERCISE------------------------------------*/
     //CREATE
     setSendExercise(sendExercise, res) {
-        SendExercise.create(sendExercise, function(err, newSendExercise) {
+        SendExercise.create(sendExercise, function (err, newSendExercise) {
             if (err) throw err;
             res.send({ status: 200, nU: newSendExercise });
         });
@@ -791,13 +792,13 @@ class Controller {
     updateSendExercise(sendExercise, res) {
         let { id, archive, people_id, exercise_id, note } = sendExercise;
         SendExercise.updateOne({ _id: id }, {
-                $set: {
-                    archive: archive,
-                    note: note,
-                    exercise_id: exercise_id,
-                    people_id: people_id,
-                },
-            })
+            $set: {
+                archive: archive,
+                note: note,
+                exercise_id: exercise_id,
+                people_id: people_id,
+            },
+        })
             .then((rawResponse) => {
                 res.send({ message: "Exercise send type updated", raw: rawResponse });
             })
@@ -808,12 +809,12 @@ class Controller {
 
     //DELETE
     deleteSendExercise(id, res) {
-            SendExercise.deleteOne({ _id: id }, (err) => {
-                if (err) throw err;
-                res.send({ message: "Send Exercise type has been deleted" });
-            });
-        }
-        /*/------------------------------------CRUD SEND EXERCISE/*------------------------------------*/
+        SendExercise.deleteOne({ _id: id }, (err) => {
+            if (err) throw err;
+            res.send({ message: "Send Exercise type has been deleted" });
+        });
+    }
+    /*/------------------------------------CRUD SEND EXERCISE/*------------------------------------*/
 
     /*------------------------ESTUDENT GRADOS ----*/
 
@@ -946,7 +947,7 @@ class Controller {
         for (let curso of activ.topic) {
             //People.find({ courestu: curso._id }, function(err, estudiantes) {
 
-            People.find({ courestu: curso }, function(err, estudiantes) {
+            People.find({ courestu: curso }, function (err, estudiantes) {
                 if (err) throw err;
 
                 if (estudiantes.length > 0) {
@@ -962,7 +963,7 @@ class Controller {
                                         color: "white",
                                         avan: 0,
                                     },
-                                }, ],
+                                },],
                             };
                             console.log("no tine asignaturas");
                             estu.asignatures.push(obj);
@@ -1003,7 +1004,7 @@ class Controller {
                                             color: "white",
                                             avan: 0,
                                         },
-                                    }, ],
+                                    },],
                                 };
                                 console.log("nuevo");
                                 estu.asignatures.push(obj);
@@ -1044,87 +1045,87 @@ class Controller {
     async setMicroClase(micro, res) {
 
 
-        MicroClase.create(micro.microclase, async function(err, newMicroClase) {
-                if (err) throw err;
+        MicroClase.create(micro.microclase, async function (err, newMicroClase) {
+            if (err) throw err;
 
-                for (const curso of micro.cursos) {
-                    var paq = new Object()
-                    paq.id_area = micro.id_area
-                    paq.microclase = []
+            for (const curso of micro.cursos) {
+                var paq = new Object()
+                paq.id_area = micro.id_area
+                paq.microclase = []
 
-                    ManagerMicroClases.find({ id_area: ObjectId(micro.id_area) }, async function(err, area) {
-                        if (err) throw err;
-                        if ((area.length == 0) && (paq != null)) {
-                            console.log(`curso : ${curso}`)
-                            let obj = new Object()
-                            obj.curso = curso,
-                                obj.clases = []
-                            obj.clases.push(newMicroClase._id)
+                ManagerMicroClases.find({ id_area: ObjectId(micro.id_area) }, async function (err, area) {
+                    if (err) throw err;
+                    if ((area.length == 0) && (paq != null)) {
+                        console.log(`curso : ${curso}`)
+                        let obj = new Object()
+                        obj.curso = curso,
+                            obj.clases = []
+                        obj.clases.push(newMicroClase._id)
 
-                            paq.microclase.push(obj)
-                            await ManagerMicroClases.create(paq, function(err, newclases) {
-                                if (err) throw err;
-                            })
-                            paq = null
-                        } else {
-                            console.log(`el otro curso : ${curso}`)
-                            let obj = new Object()
-                            obj.curso = curso,
-                                obj.clases = []
-                            obj.clases.push(newMicroClase._id)
+                        paq.microclase.push(obj)
+                        await ManagerMicroClases.create(paq, function (err, newclases) {
+                            if (err) throw err;
+                        })
+                        paq = null
+                    } else {
+                        console.log(`el otro curso : ${curso}`)
+                        let obj = new Object()
+                        obj.curso = curso,
+                            obj.clases = []
+                        obj.clases.push(newMicroClase._id)
 
-                            var r = await ManagerMicroClases.findOneAndUpdate({ id_area: ObjectId(micro.id_area), "microclase.curso": curso }, { $push: { "microclase.$.clases": newMicroClase._id } });
+                        var r = await ManagerMicroClases.findOneAndUpdate({ id_area: ObjectId(micro.id_area), "microclase.curso": curso }, { $push: { "microclase.$.clases": newMicroClase._id } });
 
-                            if (r == null) {
-                                console.log("crea curso")
-                                await ManagerMicroClases.updateOne({ id_area: ObjectId(micro.id_area) }, { $push: { "microclase": obj } });
-                            }
-
+                        if (r == null) {
+                            console.log("crea curso")
+                            await ManagerMicroClases.updateOne({ id_area: ObjectId(micro.id_area) }, { $push: { "microclase": obj } });
                         }
-                    })
-                }
 
-
-
-            })
-            /*
-            else
-             {
-                for (let curso of micro.cursos) {
-                //    MicroClases.updateOne({ id_area: micro.id_area}, { $set: { asignatures: estu.asignatures } }).then((rawResponse) => {
-                        console.log("actualizado");
-                  //  });
-                }
+                    }
+                })
             }
 
-              })
 
-                                res.send({ status: 200, nU: newMicroClase });
-            });*/
+
+        })
+        /*
+        else
+         {
+            for (let curso of micro.cursos) {
+            //    MicroClases.updateOne({ id_area: micro.id_area}, { $set: { asignatures: estu.asignatures } }).then((rawResponse) => {
+                    console.log("actualizado");
+              //  });
+            }
+        }
+
+          })
+
+                            res.send({ status: 200, nU: newMicroClase });
+        });*/
         res.send({ status: 200 });
     }
 
 
     setAsignaturaMicroClase(curso, res) {
-            console.log(curso)
-            console.log("aqui estoy")
-                // ManagerMicroClases.find({ microclase: { curso: ObjectId(curso.idCurso) } }).then((response) => {
-            ManagerMicroClases.find({}).then((response) => {
-                let clases = []
-                for (let i = 0; i < response.length; i++) {
-                    for (let j = 0; j < response[i].microclase.length; j++) {
-                        if (response[i].microclase[j].curso._id == curso.idCurso) {
-                            clases.push(response[i])
-                        }
+        console.log(curso)
+        console.log("aqui estoy")
+        // ManagerMicroClases.find({ microclase: { curso: ObjectId(curso.idCurso) } }).then((response) => {
+        ManagerMicroClases.find({}).then((response) => {
+            let clases = []
+            for (let i = 0; i < response.length; i++) {
+                for (let j = 0; j < response[i].microclase.length; j++) {
+                    if (response[i].microclase[j].curso._id == curso.idCurso) {
+                        clases.push(response[i])
                     }
-
-
                 }
-                res.send(clases);
-            })
-        }
-        ///////// hasta aqui esta micro clase ////////
-        /////////////////////////////////////////////
+
+
+            }
+            res.send(clases);
+        })
+    }
+    ///////// hasta aqui esta micro clase ////////
+    /////////////////////////////////////////////
 }
 //___________________Codigo nuevo: Dev Isaac Tordecilla Feria_____________
 

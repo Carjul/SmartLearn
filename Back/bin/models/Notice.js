@@ -2,6 +2,11 @@ const mongoose = require('mongoose')
 const NoticiasSchema = new mongoose.Schema({
     title : String,
     autor: String,
+    idAutor:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'People'
+        }    ],
     category: String,
     time: String,
     abstract: String,
@@ -10,7 +15,7 @@ const NoticiasSchema = new mongoose.Schema({
     estado:[
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'NoticiasEstado'
+            ref: 'estado'
         }
     ]
 })

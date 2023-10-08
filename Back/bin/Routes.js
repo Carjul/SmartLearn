@@ -39,13 +39,32 @@ app.post("/noticias/docente", function(req, res) {
 //--------------------------------estadoNotica---------------------------------------
 
 app.post("/estadoNoticia", async(req, res)=> {
-
     const estado = await NoticeState.find()
     res.json(estado)
-    
-    
 })
 
+app.post("/estadoNoticia/:id", async(req, res)=> {
+    const {id} = req.params
+    const estado = await NoticeState.findOne({"_id":id})
+    res.json(estado)    
+})
+
+app.post("/createEstadoNoticia", async(req, res)=> {
+    const {description} = req.body
+    if(description !== ""){
+        const estado = new NoticeState({description})
+        await estado.save()
+        res.json({message:"Estado creado"})
+    }
+
+app.delete("/deleteEstadoNoticia/:id", async(req, res)=> {
+    const {id} = req.params
+    await NoticeState.findByIdAndDelete(id)
+    res.json({message:"Estado eliminado"})
+})
+
+
+})
 
 // _______________________________  CREAR NOTICIAS _________________________________________
 
