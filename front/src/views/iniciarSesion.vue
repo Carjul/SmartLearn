@@ -124,8 +124,7 @@ export default {
   methods: {
     async login() {
       this.isBusy = true;
-      if (this.usuario !== '') {
-        if (this.contrasena !== '') {
+      if (this.usuario !== '' && this.contrasena !== '') {
           this.prueba = 1;
           let autentication = {
             username: this.usuario,
@@ -173,14 +172,11 @@ export default {
             this.isBusy = true;
             this.prueba = 0;
           }
-        } else {
-          this.msg = 'El Campo Contraseña es necesario';
-          this.isBusy = true;
         }
-      } else {
-        this.msg = 'El Campo Usuario es necesario';
-        this.isBusy = true;
-      }
+        else {
+         this.msg = 'El Campo Usuario y Contraseña son necesarios';
+         this.isBusy = true;
+       }
     },
   },
 };
