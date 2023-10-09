@@ -17,7 +17,8 @@ const NoticiasSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'estado'
         }
-    ]
+    ],
+    observacion:String,
 })
 
 var Notice = mongoose.model('Notice', NoticiasSchema)

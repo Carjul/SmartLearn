@@ -169,7 +169,7 @@ export default {
             this.error = true;
             console.log(error);
             this.msg = 'Usuario o Contraseña son incorrectos';
-            this.isBusy = true;
+            this.isBusy = false;
             this.prueba = 0;
           }
         }

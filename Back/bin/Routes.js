@@ -15,6 +15,7 @@ const fs = require("fs")
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const NoticeState = require("../bin/models/NoticiaEstado");
+const  Notice = require("../bin/models/Notice");
 
 //app.use(fileUdpload())
 
@@ -22,7 +23,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Crear noticia por docente (requiere autenticación)
-app.post("/noticias/docente", function(req, res) {
+app.post("/noticias/docente", function (req, res) {
     const docente = req.body; // Asegúrate de que la solicitud incluya la información del docente autenticado
     const news = req.body.news; // Asume que los datos de la noticia se envían en el cuerpo de la solicitud
 
@@ -39,30 +40,30 @@ app.post("/noticias/docente", function(req, res) {
 
 //--------------------------------estadoNotica---------------------------------------
 
-app.post("/estadoNoticia", async(req, res)=> {
+app.post("/estadoNoticia", async (req, res) => {
     const estado = await NoticeState.find()
     res.json(estado)
 })
 
-app.post("/estadoNoticia/:id", async(req, res)=> {
-    const {id} = req.params
-    const estado = await NoticeState.findOne({"_id":id})
-    res.json(estado)    
+app.post("/estadoNoticia/:id", async (req, res) => {
+    const { id } = req.params
+    const estado = await NoticeState.findOne({ "_id": id })
+    res.json(estado)
 })
 
-app.post("/createEstadoNoticia", async(req, res)=> {
-    const {description} = req.body
-    if(description !== ""){
-        const estado = new NoticeState({description})
+app.post("/createEstadoNoticia", async (req, res) => {
+    const { description } = req.body
+    if (description !== "") {
+        const estado = new NoticeState({ description })
         await estado.save()
-        res.json({message:"Estado creado"})
+        res.json({ message: "Estado creado" })
     }
 
-app.delete("/deleteEstadoNoticia/:id", async(req, res)=> {
-    const {id} = req.params
-    await NoticeState.findByIdAndDelete(id)
-    res.json({message:"Estado eliminado"})
-})
+    app.delete("/deleteEstadoNoticia/:id", async (req, res) => {
+        const { id } = req.params
+        await NoticeState.findByIdAndDelete(id)
+        res.json({ message: "Estado eliminado" })
+    })
 
 
 })
@@ -70,7 +71,7 @@ app.delete("/deleteEstadoNoticia/:id", async(req, res)=> {
 // _______________________________  CREAR NOTICIAS _________________________________________
 
 // Recibir noticias
-app.post("/notice", function(req, res) {
+app.post("/notice", function (req, res) {
     const notice = req.body
     Controller.createNotice(notice, res);
 })
@@ -78,6 +79,30 @@ app.post("/notice", function(req, res) {
 // Obtenr noticias
 app.get("/notices", (req, res) => {
     Controller.getAllNotices(res);
+})
+
+app.put("/noticeUpdateEst", async(req, res) => {
+    const {_id} = req.body
+    const estado =await NoticeState.findOne({description:"publicado"})  
+    if(estado && _id){
+     await Notice.findByIdAndUpdate(_id, {estado: estado._id}) 
+    res.json({message: "Noticia publicada"})
+    }
+    else{
+        res.json({message: "No se pudo publicar"})
+    }
+})
+
+app.put("/noticeUpdateEst2", async(req, res) => {
+    const {_id, observacion} = req.body
+    const estado =await NoticeState.findOne({description:"rechazado"})  
+    if(estado && _id && observacion){
+     await Notice.findByIdAndUpdate(_id, {estado: estado._id, observacion}) 
+    res.json({message: "Noticia rechazada"})
+    }
+    else{
+        res.json({message: "No se pudo rechazada"})
+    }
 })
 
 app.delete("/deletenotices/:id", (req, res) => {
@@ -89,11 +114,11 @@ app.delete("/deletenotices/:id", (req, res) => {
 // Realizar la gestion para guardar la img, en un carpeta en el backend
 const projectRoot = path.resolve(__dirname, '..');
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         const destinationPath = path.join(projectRoot, 'uploads');
         cb(null, destinationPath);
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         const ext = path.extname(file.originalname);
         const filename = uniqueSuffix + ext;
@@ -118,17 +143,17 @@ app.post('/images', carga.single('image'), (req, res) => {
 
 
 /* autenticación */
-app.post("/auth", function(req, res) {
-        const people = req.body;
-        Controller.getAuth(people, res);
-    })
-    /* autenticación */
+app.post("/auth", function (req, res) {
+    const people = req.body;
+    Controller.getAuth(people, res);
+})
+/* autenticación */
 
 
 
 /* -------------------------course petitions------------------------- */
 //create 
-app.post("/courses", function(req, res) {
+app.post("/courses", function (req, res) {
     const course = req.body;
     Controller.setCourse(course, res);
 })
@@ -163,34 +188,36 @@ app.delete("/courses/:id", (req, res) => {
 
 /* /-------------------------people petitions------------------------- */
 
-app.post("/peoples", function(req, res) {
+app.post("/peoples", function (req, res) {
     const people = req.body;
     Controller.setPeople(people, res);
 })
 
-app.get("/peoples", function(req, res) {
+app.get("/peoples", function (req, res) {
     Controller.getPeoples(res);
 })
 
-app.get("/peoples/:id", function(req, res) {
+app.get("/peoples/:id", function (req, res) {
     const id = req.params;
     console.log(id)
     Controller.getPeople(id, res);
 })
 
-app.put("/peoples/:id", function(req, res) {
+app.put("/peoples/:id", function (req, res) {
     const people = req.body.peoples;
     people.id = req.params.id;
     Controller.updatePeople(people, res);
 });
 
-app.delete("/peoples/:id", function(req, res) {
-        const id = req.params.id;
-        Controller.deletePeople(id, res);
-    })
-    /* /-------------------------people petitions------------------------- */
-app.put("/peoplesState", function(req, res) {
-    let ruta = {
+app.delete("/peoples/:id", function (req, res) {
+    const id = req.params.id;
+    Controller.deletePeople(id, res);
+})
+/* /-------------------------people petitions------------------------- */
+app.put("/peoplesState", function (req, res) {
+    var menu2;
+    const { _id, isRedactor, isEditor, menu } = req.body;
+    let redactar = {
         "icon": "pe-7s-note2",
         "title": "Noticias",
         "child": [
@@ -204,48 +231,73 @@ app.put("/peoplesState", function(req, res) {
             }
         ]
     }
-    const {_id, isRedactor, isEditor} = req.body;
+    let editar = {
+        "icon": "pe-7s-note2",
+        "title": "Noticias",
+        "child": [
+            {
+                "href": "/dashboard/welcome/listarnotice",
+                "title": "Lista"
+            }
+        ]
+    }
+    if (isEditor === false && isRedactor === false) {
+        menu2 = menu.filter(item => item.title !== "Noticias")
+    }
+    if (isEditor === true && isRedactor === false) {
+        menu2 = menu.filter(item => item.title !== "Noticias")
+        menu2.push(editar)
+    }
+    if (isEditor === false && isRedactor === true) {
+        menu2 = menu.filter(item => item.title !== "Noticias")
+        menu2.push(redactar)
+    }
+    if (isEditor === true && isRedactor === true) {
+        menu2 = menu.filter(item => item.title !== "Noticias")
+        menu2.push(redactar)
+    }
 
-   if(_id){
-    People.findByIdAndUpdate(_id, {isRedactor, isEditor}, {new:true}, (err, doc)=>{
-        if(err){
-             console.log(err)
-        }
-        res.send({message:"usuario actualizado"})
-  })
-   }else{
-         res.send({message:"error"})
-   }
-   
-   
-        
+
+    if (_id) {
+        People.findByIdAndUpdate(_id, { isRedactor, isEditor, menu: menu2 }, { new: true }, (err, doc) => {
+            if (err) {
+                console.log(err)
+            }
+            res.send({ message: "usuario actualizado" })
+        })
+    } else {
+        res.send({ message: "error" })
+    }
+
+
+
 })
 
 
 
-    /* /-------------------------role petitions------------------------- */
+/* /-------------------------role petitions------------------------- */
 
 
 
 /*
 Roles------------------------------------------------------ 
 */
-app.post("/roles", function(req, res) {
+app.post("/roles", function (req, res) {
     const role = req.body;
     Controller.setRole(role, res);
 })
 
-app.get("/roles", function(req, res) {
+app.get("/roles", function (req, res) {
     Controller.getRoles(res);
 });
 
-app.put("/roles/:id", function(req, res) {
+app.put("/roles/:id", function (req, res) {
     const role = req.body.roles;
     role.id = req.params.id;
     Controller.updateRole(role, res);
 });
 
-app.delete("/roles/:id", function(req, res) {
+app.delete("/roles/:id", function (req, res) {
     const id = req.params.id;
     Controller.deleteRole(id, res);
 });
@@ -269,11 +321,11 @@ var upload = multer({
         s3: s3,
         bucket: 'trackapp3',
         contentType: multerS3.AUTO_CONTENT_TYPE,
-        metadata: function(req, file, cb) {
+        metadata: function (req, file, cb) {
             // console.log(file)
             cb(null, { fieldName: file.fieldname });
         },
-        key: function(req, file, cb) {
+        key: function (req, file, cb) {
             // cb(null, Date.now().toString())
             cb(null, shortId.generate() + '-' + file.originalname);
         }
@@ -308,16 +360,16 @@ async function getFileURL(fileName) {
 
 //create
 
-app.get('/files', async(req, res) => {
+app.get('/files', async (req, res) => {
     const result = await getFiles()
     res.json(result.Contents)
 })
 
-app.get('/files/:fileName', async(req, res) => {
+app.get('/files/:fileName', async (req, res) => {
     const result = await getFile(req.params.fileName)
     res.json(result.$metadata)
 })
-app.get('/file/:fileName', async(req, res) => {
+app.get('/file/:fileName', async (req, res) => {
     const result = await getFileURL(req.params.fileName)
     res.json({
         url: result
@@ -325,22 +377,22 @@ app.get('/file/:fileName', async(req, res) => {
 })
 
 /* -------------------------exercise petitions------------------------- */
-app.post("/exer", upload.single('file'), function(req, res) {
+app.post("/exer", upload.single('file'), function (req, res) {
     const archivo = req.file;
     res.send({ status: 200, nU: archivo });
 })
-app.post("/exercisesss", function(req, res) {
+app.post("/exercisesss", function (req, res) {
     const exercise = req.body;
     Controller.setExerciseEstudiante(exercise, res);
 })
 
-app.post("/exercises", function(req, res) {
+app.post("/exercises", function (req, res) {
     const exercise = req.body;
     Controller.setExercise(exercise, res);
 })
 
 
-app.post("/exercisescalificar", function(req, res) {
+app.post("/exercisescalificar", function (req, res) {
     const paq = req.body;
     Controller.setCalificacionExcersice(paq, res);
 })
@@ -382,7 +434,7 @@ app.delete("/exercises/:id", (req, res) => {
 
 /* -------------------------area petitions------------------------- */
 //create
-app.post("/areas", function(req, res) {
+app.post("/areas", function (req, res) {
     const area = req.body;
     Controller.setArea(area, res);
 })
@@ -394,10 +446,10 @@ app.get("/areas", (req, res) => {
 
 //show for id
 app.get("/areas/:id", (req, res) => {
-        let { id } = req.params;
-        Controller.getAreas(id, res);
-    })
-    //update
+    let { id } = req.params;
+    Controller.getAreas(id, res);
+})
+//update
 app.put("/areas/:id", (req, res) => {
     const area = req.body.areas;
     area.id = req.params.id;
@@ -414,7 +466,7 @@ app.delete("/areas/:id", (req, res) => {
 
 /* -------------------------school petitions------------------------- */
 //create
-app.post("/schools", function(req, res) {
+app.post("/schools", function (req, res) {
     const school = req.body;
     Controller.setSchool(school, res);
 })
@@ -426,10 +478,10 @@ app.get("/schools", (req, res) => {
 
 //show for id
 app.get("/schools/:id", (req, res) => {
-        let { id } = req.params;
-        Controller.getPeriods(id, res);
-    })
-    //update
+    let { id } = req.params;
+    Controller.getPeriods(id, res);
+})
+//update
 app.put("/schools/:id", (req, res) => {
     const school = req.body.schools;
     school.id = req.params.id;
@@ -446,7 +498,7 @@ app.delete("/schools/:id", (req, res) => {
 
 /* -------------------------exerciseType petitions------------------------- */
 //create
-app.post("/exercisetypes", function(req, res) {
+app.post("/exercisetypes", function (req, res) {
     const exercisetype = req.body;
     Controller.setExerciseType(exercisetype, res);
 })
@@ -458,10 +510,10 @@ app.get("/exercisetypes", (req, res) => {
 
 //show for id
 app.get("/exercisetypes/:id", (req, res) => {
-        let { id } = req.params;
-        Controller.getExerciseType(id, res);
-    })
-    //update
+    let { id } = req.params;
+    Controller.getExerciseType(id, res);
+})
+//update
 app.put("/exercisetypes/:id", (req, res) => {
     const exercisetype = req.body.exerciseTypes;
     exercisetype.id = req.params.id;
@@ -478,7 +530,7 @@ app.delete("/exercisetypes/:id", (req, res) => {
 
 /* -------------------------resource petitions------------------------- */
 //create
-app.post("/resources", function(req, res) {
+app.post("/resources", function (req, res) {
     const resource = req.body;
     Controller.setResource(resource, res);
 })
@@ -490,10 +542,10 @@ app.get("/resources", (req, res) => {
 
 //show for id
 app.get("/resources/:id", (req, res) => {
-        let { id } = req.params;
-        Controller.getResource(id, res);
-    })
-    //update
+    let { id } = req.params;
+    Controller.getResource(id, res);
+})
+//update
 app.put("/resources/:id", (req, res) => {
     const resource = req.body.resources;
     resource.id = req.params.id;
@@ -510,7 +562,7 @@ app.delete("/resources/:id", (req, res) => {
 
 /* -------------------------resource petitions------------------------- */
 //create
-app.post("/sendExercises", function(req, res) {
+app.post("/sendExercises", function (req, res) {
     const sendExercise = req.body;
     Controller.setSendExercise(sendExercise, res);
 })
@@ -522,10 +574,10 @@ app.get("/sendExercises", (req, res) => {
 
 //show for id
 app.get("/sendExercises/:id", (req, res) => {
-        let { id } = req.params;
-        Controller.getResource(id, res);
-    })
-    //update
+    let { id } = req.params;
+    Controller.getResource(id, res);
+})
+//update
 app.put("/sendExercises/:id", (req, res) => {
     const sendExercise = req.body.sendExercises;
     sendExercise.id = req.params.id;
@@ -560,22 +612,22 @@ exports.app = app;
 
 //////// Aqui queda lo de micro clase //////////
 ///////////////////////////////////////////////
-app.post("/microClase", function(req, res) {
+app.post("/microClase", function (req, res) {
     const micro = req.body;
     Controller.setMicroClase(micro, res);
 })
 
-app.post("/microClasepdf", upload.single('file'), function(req, res) {
+app.post("/microClasepdf", upload.single('file'), function (req, res) {
     const archivo = req.file;
     res.send({ status: 200, nU: archivo });
 })
 
 
 const stor = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, './bin/H5P/')
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(null, file.originalname)
     }
 
@@ -594,7 +646,7 @@ app.post("/microClaseh5p", cargar.single('file'), (req, res) => {
     //Ruta local de archivo que se va a descomprimir, necesita estár en la carpeta de origen deeste código
     //const file = './Prueba.zip';
     const file = micro
-        // elimina la extensión .zip del nombre del archivo
+    // elimina la extensión .zip del nombre del archivo
     var folderName = file.originalname.slice(0, -4);
     folderName += crypto.randomUUID();
     // console.log(folderName)
@@ -614,7 +666,7 @@ app.post("/microClaseh5p", cargar.single('file'), (req, res) => {
             nombre: folderName
         }
         console.log(puto)
-            //  res.send({ status: 200, nU: puto });
+        //  res.send({ status: 200, nU: puto });
         console.log('Archivo descomprimido');
     } else {
         res.send({ status: 500, nU: 'Formato no soportado' });
@@ -625,7 +677,7 @@ app.post("/microClaseh5p", cargar.single('file'), (req, res) => {
 
 
 
-app.post("/asignaturasMicroClase", function(req, res) {
+app.post("/asignaturasMicroClase", function (req, res) {
     const curso = req.body;
     Controller.setAsignaturaMicroClase(curso, res);
 })
@@ -685,10 +737,10 @@ async function getFileURLh5p(fileName) {
 
 } */
 app.use(fileUdpload())
-app.post("/microclaseS3H5p", async function(req, res) {
+app.post("/microclaseS3H5p", async function (req, res) {
     const nombre = req.files.file.name
     const archivo = await uploadfile(req.files.file)
-        /* const url = await getFileURLh5p(archivo.nombre) */
+    /* const url = await getFileURLh5p(archivo.nombre) */
     const url = await uploadfile(req.files.file)
     res.send({ status: 200, nU: url, nombre: nombre });
 
@@ -701,7 +753,7 @@ app.post("/microclaseS3H5p", async function(req, res) {
 /////////////////////////////////////////////
 
 ///// Ruta para Guardar Las imagenes de la noticia ///////
-app.post("/imagenNoticia", async function(req, res) {
+app.post("/imagenNoticia", async function (req, res) {
     const url = await uploadimagenes(req.files.file)
 
     // const url = await getFileURLimagennoticia(archivo.nombre)
