@@ -9,6 +9,7 @@
 
                 </v-col>
             </v-row>
+           
             <!------listar noticiess-->
 
             <div v-if="user.isRedactor">
@@ -29,8 +30,8 @@
                                     <p v-if="item.observacion" class="text-danger">Observacion: {{ item.observacion }}</p>
                                 </div>
                                 <div v-if="user.isRedactor && Estado(item.estado[0]) === 'rechazado'" class="card-footer">
-                                    <button class="btn btn-warning">Editar</button>
-                                 
+                                    <button class="btn btn-warning" @click="mostrarModal2(item)">Editar</button>
+
                                 </div>
                             </div>
                         </div>
@@ -55,7 +56,7 @@
                                     <p>{{ Estado(item.estado[0]) }}</p>
                                 </div>
                                 <div v-if="user.isEditor" class="card-footer">
-                                    <button class="btn btn-danger">Rechazar</button>
+                                    <button class="btn btn-danger"  @click="mostrarModal(item._id)">Rechazar</button>
                                     <button class="btn btn-warning" @click="pasarapublic(item._id)">Publicar</button>
                                 </div>
 
@@ -65,7 +66,84 @@
                     </div>
                 </div>
             </div>
+ <!-- Modal -->
+ <div v-if="modalVisible" id="modal">
+    <div id="modal-contenido">
+        <!-- Contenido del modal -->
+        <h2>Rechazar Noticia</h2>
+        <textarea name="" id="" cols="30" rows="10" v-model="observacion" required placeholder="type observacion" style="border: solid 2px;">
+        </textarea>
+        <!-- Botón para cerrar el modal -->
+        <div>
+            <button v-if="observacion !== ''" @click="rechazarN" class="btn btn-warning">Enviar</button> 
+            <button @click="cerrarModal" class="btn btn-danger">Cerrar Modal</button>
+        </div>
+    </div>
+</div>
+<div v-if="modal2Visible" id="modal">
+    <div id="modal-contenido2">
+        <!-- Contenido del modal -->
+        <h2>Rechazar Noticia</h2>
+        <v-form ref="form" >
 
+            <h1>TITULO</h1>
+           
+            <v-row>
+                <v-col cols="12" md="4">
+                    <v-text-field v-model="noticeFile.title" label="Nombre del Articulo"
+                        :rules="titleRules"></v-text-field>
+                </v-col>
+            </v-row>
+            <h3>Autor</h3>
+            <v-row>
+                <v-col cols="4" md="4">
+                    <v-text-field v-model="noticeFile.autor" prepend-icon="mdi-account" :rules="authorRules"
+                        label="Autor"
+                        disabled
+                        ></v-text-field>
+                       
+                </v-col>
+
+                <v-col cols="4">
+                    <v-select :items="items" v-model="noticeFile.category" menu-props="auto" label="Categoria"
+                        hide-details prepend-icon="mdi-tag" single-line></v-select>
+                </v-col>
+                <v-col cols="4" md="4">
+                    <v-file-input v-model="noticeFile.images" label="Imagen de la noticia" variant="filled"
+                        accept="image/png, image/jpeg, image/bmp" prepend-icon="mdi-camera"></v-file-input>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col>
+                    <v-textarea label="Resumen" v-model="noticeFile.abstract" :rules="rulesAbstract" auto-grow
+                        outlined rows="1" row-height="15">
+                    </v-textarea>
+                </v-col>
+            </v-row>
+
+            <v-row>
+                <v-col>
+                    <vue-editor id="editor" v-model="noticeFile.content" useCustomImageHandler
+                        @blur="extractTextFromContent">
+                        <!--@image-added="handleImageAdded"-->
+                    </vue-editor>
+                    <div>
+                        <v-btn block class="my-2" color="green" type="submit">
+                            <v-icon dark>mdi-cloud-upload</v-icon>
+                            Enviar
+                        </v-btn>
+                    </div>
+
+                
+                </v-col>
+            </v-row>
+
+        </v-form>
+        <div>
+            <button @click="cerrarModal2" class="btn btn-danger">Cerrar Modal</button>
+        </div>
+    </div>
+</div>
         </v-container>
     </div>
 </template>
@@ -75,15 +153,57 @@
 import axios from 'axios';
 export default {
     data: () => ({
+        noticeFile: {
+            title: "",
+            autor: "",
+            idAutor:"",
+            category: "",
+            time: null,
+            abstract: "",
+            content: "",
+            images: "",
+            estado: "redactado"
+        },
+        observacion: '',
+        id_notice:"",
         user: [],
+        items: ['Educacion', 'Deporte', 'Administrativo', 'Politica'],
         noticieState: [],
         noticies: [],
         noticies2: [],
+        modalVisible: false,
+        modal2Visible: false,
         estados: []
     }
     ),
     methods: {
-
+        rechazarN(){
+        axios.put(`http://localhost:3001/noticeUpdateEst2`, { _id: this.id_notice, observacion: this.observacion}).then((response) => {
+            console.log(response.data)
+            this.getNotices2(this.user)
+            this.cerrarModal()
+        })
+        this.observacion = ''
+        this.id_notice = ''
+        },
+        mostrarModal(x) {
+            console.log(x);
+            this.modalVisible = true;
+            this.id_notice = x;
+        },
+        mostrarModal2(x) {
+            console.log(x);
+            this.modal2Visible = true;
+  
+        },
+        cerrarModal() {
+            this.modalVisible = false;
+            
+        },
+        cerrarModal2() {
+            this.modal2Visible = false;
+            
+        },
         //mostrar estado en html
         pasarapublic(id) {
             console.log(id)
@@ -136,7 +256,8 @@ export default {
         getNotices2(user) {
             try {
                 axios.get("http://localhost:3001/notices").then((response) => {
-                    var y = response.data?.filter(e => e.idAutor[0] !== user?._id)
+                    var y = response.data?.filter(e => e.idAutor[0] !== user?._id )
+                    
                     this.noticies2 = y.reverse()
 
                 })
@@ -156,4 +277,42 @@ export default {
     }
 }
 </script>
-<style></style>
+<style>
+#modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Estilos para el contenido del modal */
+  #modal-contenido {
+    background-color: white;
+    padding: 20px;
+    width: 50%;
+    height: 50%;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  #modal-contenido2 {
+    background-color: white;
+    padding: 20px;
+    width: 70%;
+    height: 100%;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  </style>
