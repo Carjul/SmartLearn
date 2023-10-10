@@ -84,7 +84,7 @@
     <div id="modal-contenido2">
         <!-- Contenido del modal -->
         <h2>Rechazar Noticia</h2>
-        <v-form ref="form" >
+        <v-form ref="form" @submit.prevent="submitForm">
 
             <h1>TITULO</h1>
            
@@ -151,7 +151,11 @@
 
 <script>
 import axios from 'axios';
+import { VueEditor } from 'vue2-editor';
 export default {
+    components: {
+        VueEditor
+    },
     data: () => ({
         noticeFile: {
             title: "",
@@ -177,6 +181,12 @@ export default {
     }
     ),
     methods: {
+        extractTextFromContent() {
+            const tempEl = document.createElement('div');
+            tempEl.innerHTML = this.noticeFile.content;
+
+            this.noticeFile.abstract = tempEl.textContent || tempEl.innerText;
+        },
         rechazarN(){
         axios.put(`http://localhost:3001/noticeUpdateEst2`, { _id: this.id_notice, observacion: this.observacion}).then((response) => {
             console.log(response.data)
@@ -194,7 +204,50 @@ export default {
         mostrarModal2(x) {
             console.log(x);
             this.modal2Visible = true;
+            this.noticeFile.title = x.title;
+            this.noticeFile.autor = x.autor;
+            this.noticeFile.category = x.category;
+            this.noticeFile.abstract = x.abstract;
+            this.noticeFile.content = x.content;
+            this.noticeFile.images = x.imagen;
+            this.noticeFile.estado = x.estado;
+            this.id_notice = x._id;
   
+        },
+        //no programado
+        async submitForm() {
+            this.prueba = false
+            const formData = new FormData();
+            formData.append('file', this.noticeFile.images)
+            await axios.post('http://localhost:3001/imagenNoticia', formData).then(async response => {
+                console.log(response.data.status)
+                if (response.data.status == 200) {
+                    let paquete = {
+                        title: this.noticeFile.title,
+                        autor: this.noticeFile.autor,
+                        idAutor: this.user?._id,
+                        category: this.noticeFile.category,
+                        time: this.noticeFile.time,
+                        abstract: this.noticeFile.abstract,
+                        content: this.noticeFile.content,
+                        images: response.data.nU,
+                        estado: this.noticeFile.estado
+                    }
+                    await axios.post('http://localhost:3001/notice', paquete).then(response => {
+                        this.snackbar = true;
+                        if (response.status == "200") {
+                            console.log(response.data)
+                        }
+                        this.clearForm()
+                    })
+                        .catch(error => {
+                            // Aquí puedes manejar los errores de la petición
+                            console.error(error);
+                        });
+                }
+            })
+
+
         },
         cerrarModal() {
             this.modalVisible = false;
@@ -307,7 +360,7 @@ export default {
     background-color: white;
     padding: 20px;
     width: 70%;
-    height: 100%;
+    height: 90%;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     display: flex;

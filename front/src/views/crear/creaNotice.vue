@@ -149,26 +149,7 @@ export default {
             this.noticeFile.abstract = tempEl.textContent || tempEl.innerText;
         },
 
-        /* handleImageAdded: function(file, Editor, cursorLocation, resetUploader) {
-             var formData = new FormData();
-             formData.append("image", file);
- 
-             axios({
-                 url: "http://localhost:3001/images",
-                 method: "POST",
-                 data: formData
-             })
-                 .then(result => {
-                 const url = result.data.url;
-                 this.noticeFile.images = url
-                 Editor.insertEmbed(cursorLocation, "image", url);
-                 resetUploader();
-                 })
-                 .catch(err => {
-                 console.log(err);
-                 });
-             }, */
-
+        
         //Tomar los datos de la noticia y enviarlo al Backend   
         //buscar estado y colocar idEstado a la noticia a guardar, por defecto en redactado
         async submitForm() {
