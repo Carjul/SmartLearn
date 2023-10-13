@@ -93,6 +93,19 @@ app.put("/noticeUpdateEst", async(req, res) => {
     }
 })
 
+app.put("/noticeUpdate2", async(req, res) => {
+    const {_id,title,autor,idAutor,category,time, abstract,content, images  } = req.body
+  
+    const estado =await NoticeState.findOne({description:"redactado"})  
+    if(estado && _id){
+     await Notice.findByIdAndUpdate(_id, {title,autor,idAutor,category,time, abstract,content, images,estado: estado._id,observacion:""}) 
+    res.json({message: "Noticia update"})
+    }
+    else{
+        res.json({message: "No se pudo update"})
+    }
+})
+
 app.put("/noticeUpdateEst2", async(req, res) => {
     const {_id, observacion} = req.body
     const estado =await NoticeState.findOne({description:"rechazado"})  
