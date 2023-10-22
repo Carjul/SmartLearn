@@ -16,6 +16,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const NoticeState = require("../bin/models/NoticiaEstado");
 const  Notice = require("../bin/models/Notice");
+const Acudientes = require("./models/acudiente");
 
 //app.use(fileUdpload())
 
@@ -603,8 +604,54 @@ app.delete("/sendExercises/:id", (req, res) => {
     Controller.deleteSendExercise(id, res);
 })
 
+/* /-------------------------Acudientes------------------------- */
+app.get("/acudientes",async(req,res)=>{
+    const acudiente = await Acudientes.find({})
+    res.json(acudiente)
+})
+
+app.post("/acudientes",async(req,res)=>{
+    const {nombres,celular,correo,direccion}=req.body
+    if (nombres && celular && correo && direccion){
+       const acudiente = await Acudientes.create({nombres,celular,correo,direccion})
+        res.json({msg:"Acudiente Creado",acudiente})
+    } else {
+        res.json({msg:"el Acudiente no se guardo"})
+    }
 
 
+})
+
+app.delete("/acudientes/:id", async(req,res)=>{
+    const {id}= req.params
+    if(id){
+        await Acudientes.findByIdAndDelete(id)
+        res.json({msg:"Acudiente eliminado"})
+    } else{
+          res.json({msg:"el Acudiente no elimino"})
+    }
+
+})
+
+app.put("/acudientes/:id",async(req,res)=>{
+    const {id}= req.params
+    const {nombres,celular,correo,direccion}=req.body
+    
+    if(id && nombres && celular && correo && direccion){  
+    await Acudientes.findByIdAndUpdate(id,{nombres,celular,correo,direccion})
+    res.json({msg:"Acudiente actualizado"})
+  
+    } else {
+        res.json({msg:"Acudiente no actualizado"})
+    }
+     
+
+})
+app.get("/acudiente/:id",async(req,res)=>{
+    const {id}= req.params
+    const acudiente = await Acudientes.findById(id)
+    res.json(acudiente)
+})
 /* /-------------------------resource petitions------------------------- */
 
 

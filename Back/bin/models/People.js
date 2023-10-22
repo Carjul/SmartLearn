@@ -1,5 +1,4 @@
 const moongose = require("mongoose");
-
 const Schema = moongose.Schema;
 
 const PeopleSchema = new Schema({
@@ -19,6 +18,8 @@ const PeopleSchema = new Schema({
             ref: 'Area',
             autopopulate: true
         },
+        
+
 
         Actividades: [{
             _id_actividad: {
@@ -32,11 +33,14 @@ const PeopleSchema = new Schema({
                 color: String,
                 avan: String
             },
-
         }],
         curso: Array,
-
     }],
+    Acudientes: {
+            type: Schema.Types.ObjectId,
+            ref: 'Acudientes',
+            autopopulate: true
+    },
     courestu: {
         type: Schema.Types.ObjectId,
         ref: 'Course',
@@ -46,6 +50,7 @@ const PeopleSchema = new Schema({
     title: String,
     menu: Array
 });
+
 PeopleSchema.plugin(require('mongoose-autopopulate'));
 const People = moongose.model("People", PeopleSchema);
 

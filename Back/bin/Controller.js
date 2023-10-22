@@ -15,6 +15,7 @@ const Resource = require("./models/Resource");
 const SendExercise = require("./models/SendExercise");
 const { ObjectOwnership } = require("@aws-sdk/client-s3");
 const { ObjectId } = require("mongodb");
+const Acudientes = require("./models/acudiente");
 const { json } = require("body-parser");
 
 class Controller {
@@ -217,6 +218,8 @@ class Controller {
         });
     }
     /* people */
+    
+    
 
     /*------------------------------------CRUD ROL------------------------------------*/
     setRole(role, res) {
