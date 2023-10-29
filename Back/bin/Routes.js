@@ -39,6 +39,7 @@ app.post("/noticias/docente", function (req, res) {
     }
 });
 
+
 //--------------------------------estadoNotica---------------------------------------
 
 app.post("/estadoNoticia", async (req, res) => {

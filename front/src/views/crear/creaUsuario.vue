@@ -103,7 +103,7 @@
                         </v-row>
 
                         <template>
-                          <v-row style="margin-top:-60px">
+                          <v-row style="margin-top:60px">
                             <v-col v-if="menu === 'Estudiante'" cols="12">
                               <hr>
                               <p>DATOS DEL ACUDIENTE</p>
@@ -114,26 +114,23 @@
 
                           <v-row style="margin-top:-60px">
                             <v-col cols="12" sm="6">
-                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px"
-                                v-model="acudientes.nombres" background-color="#D4D4D4"
-                                onkeyup="javascript:this.value=this.value.toUpperCase();" label="Nombres Acudiente"
-                                outlined dense color="blue" autocomplete="false" class="mt-4" />
+                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px" v-model="acudientes.nombres"
+                                background-color="#D4D4D4" onkeyup="javascript:this.value=this.value.toUpperCase();"
+                                label="Nombres Acudiente" outlined dense color="blue" autocomplete="false" class="mt-4" />
                             </v-col>
                             <v-col cols="12" sm="6">
-                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px"
-                                v-model="acudientes.celular" background-color="#D4D4D4"
-                                onkeyup="javascript:this.value=this.value.toUpperCase();" label="celular Acudiente"
-                                outlined dense color="blue" autocomplete="false" class="mt-4" />
+                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px" v-model="acudientes.celular"
+                                background-color="#D4D4D4" onkeyup="javascript:this.value=this.value.toUpperCase();"
+                                label="celular Acudiente" outlined dense color="blue" autocomplete="false" class="mt-4" />
                             </v-col>
-                          
+
                           </v-row>
 
                           <v-row style="margin-top:-60px">
                             <v-col cols="12" sm="6">
-                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px"
-                                v-model="acudientes.correo" background-color="#D4D4D4"
-                                onkeyup="javascript:this.value=this.value.toUpperCase();" label="Correo Acudiente"
-                                outlined dense color="blue" autocomplete="false" class="mt-4" />
+                              <v-text-field v-if="menu === 'Estudiante'" style="margin:10px" v-model="acudientes.correo"
+                                background-color="#D4D4D4" onkeyup="javascript:this.value=this.value.toUpperCase();"
+                                label="Correo Acudiente" outlined dense color="blue" autocomplete="false" class="mt-4" />
                             </v-col>
                             <v-col cols="12" sm="6">
                               <v-text-field v-if="menu === 'Estudiante'" style="margin:10px"
@@ -143,11 +140,12 @@
                             </v-col>
                           </v-row>
 
-                          <v-col>
-                              <v-btn @click="craeracudiente()">
-                                Guardar
-                              </v-btn>
-                            </v-col>
+                          <v-col v-if="menu === 'Estudiante'">
+
+                            <v-btn @click="craeracudiente()">
+                              Guardar
+                            </v-btn>
+                          </v-col>
 
                           <!-- Resto del formulario y botón para guardar -->
                         </template>
@@ -158,7 +156,7 @@
                       </v-card>
                       <v-btn
                         v-if="name != '' && apellido != '' && selected != '' && menu != 'Administrador' && usuario != '' && contrasena1 != ''"
-                        color="green" @click="pasaPantalla2()">
+                        color="green"  @click="pasaPantalla2()">
                         Continue
                       </v-btn>
                       <v-btn
@@ -173,7 +171,7 @@
                         </v-btn>
                       </template>
                       <template v-if="menu != 'Administrador'">
-                        <v-btn disabled
+                        <v-btn disabled 
                           v-if="name == '' || apellido == '' || selected == '' || usuario == '' || contrasena1 == ''">
                           Continue
                         </v-btn>
@@ -542,7 +540,7 @@ export default {
         correo: "",
         direccion: ""
       },
-      acudientesId:null,
+      acudientesId: null,
       asignatu: null,
 
       heading: '',
@@ -737,10 +735,10 @@ export default {
       axios.post('http://localhost:3001/acudientes', this.acudientes)
         .then((res) => {
           console.log(res.data)
-        
-            this.acudientesId=res.data.acudiente._id
-          
-            console.log(this.acudientesId)
+
+          this.acudientesId = res.data.acudiente._id
+
+          console.log(this.acudientesId)
         })
         .catch((err) => {
           console.log(err.message)
@@ -774,11 +772,11 @@ export default {
         "password": this.contrasena1,
         "menu": this.pru,
         "creation_date": d.toUTCString(),
-        "Acudientes":this.acudientesId, // Agregar el array de acudientes
+        "Acudientes": this.acudientesId, // Agregar el array de acudientes
       };
 
-    
-     if (this.menu == 'Estudiante')
+
+      if (this.menu == 'Estudiante')
         json.courestu = this.gradosAsignados[0]._id;
 
 
@@ -864,4 +862,5 @@ export default {
   background-image: url("../../assets/Background.png");
   background-size: 100% 100%;
 
-}</style>
+}
+</style>
