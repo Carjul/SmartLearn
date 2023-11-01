@@ -103,7 +103,7 @@
                         </v-row>
 
                         <template>
-                          <v-row style="margin-top:60px">
+                          <v-row style="margin-top:1px">
                             <v-col v-if="menu === 'Estudiante'" cols="12">
                               <hr>
                               <p>DATOS DEL ACUDIENTE</p>
