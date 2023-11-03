@@ -18,9 +18,7 @@ const PeopleSchema = new Schema({
             ref: 'Area',
             autopopulate: true
         },
-        
-
-
+    
         Actividades: [{
             _id_actividad: {
                 type: Schema.Types.ObjectId,

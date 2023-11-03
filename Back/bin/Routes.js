@@ -17,6 +17,7 @@ const path = require('path');
 const NoticeState = require("../bin/models/NoticiaEstado");
 const  Notice = require("../bin/models/Notice");
 const Acudientes = require("./models/acudiente");
+const { buscarTarea } = require("./services/enviarCorreo");
 
 //app.use(fileUdpload())
 
@@ -604,6 +605,11 @@ app.delete("/sendExercises/:id", (req, res) => {
     const id = req.params.id;
     Controller.deleteSendExercise(id, res);
 })
+/* proceso de alerta actividades*/
+app.get("/alertaActividades", (req, res) => {
+   buscarTarea()
+    res.send({msg:"Proceso de envio de mensajes activado"})
+    })
 
 /* /-------------------------Acudientes------------------------- */
 app.get("/acudientes",async(req,res)=>{
