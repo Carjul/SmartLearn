@@ -9,9 +9,11 @@ app.listen(PORT, () => {
 
 
 
-const job = schedule.scheduleJob('59 23 * * *', function(){
+const job = schedule.scheduleJob('59 21 * * *', function(){
   console.log('Tarea de envio de alertas, todos los días a las 11:59 PM');
   buscarTarea()
 });
+
+//console.log(job)
 
   
