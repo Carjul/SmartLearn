@@ -6,6 +6,10 @@ const accountSid = 'AC60a5e5949bbc44ebd5457707bc9e4c81';
 const authToken = '21a17058399d6cbe85d37f64c6c2265a';
 const client = require('twilio')(accountSid, authToken);
 
+const { Vonage } = require('@vonage/server-sdk')
+
+
+
 
 
 const sendMail = async (correo,nombreAct) => {
@@ -19,37 +23,16 @@ const sendMail = async (correo,nombreAct) => {
     });
 }
 
-const sendSms = (num, mensaje) => {
+const sendSms = async (num, mensaje) => {
+    const vonage = new Vonage({
+        apiKey: "497f4576",
+        apiSecret: "wlAYFjzV3EnLMtFi"
+      })
+    const from = "Vonage APIs"  
+    await vonage.sms.send({num, from, mensaje})
+        .then(resp => { console.log('Message sent successfully'); console.log(resp); })
+        .catch(err => { console.log('There was an error sending the messages.'); console.error(err); });
     
-
-  const apiSecret = "d8d3d81584defe35efbe4dd773500081bd829c65";
-
-  const message = {
-    secret: apiSecret,
-    mode: "devices",
-    device: "00000000-0000-0000-dbc8-92cc3dd5d817",
-    sim: 1,
-    priority: 1,
-    phone: num,
-    message: mensaje,
-  };
-  
-  const url = "https://sms.uncgateway.com/api/send/sms";
-  
-  const queryString = Object.keys(message)
-    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(message[key]))
-    .join("&");
-  
-  fetch(`${url}?${queryString}`, {
-    method: "POST",
-  })
-    .then(response => response.json())
-    .then(result => {
-      console.log(result);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
 }
  
 function calcularDiferenciaDeDias(fechaObjetivo) {
@@ -127,9 +110,9 @@ for (let i = 0; i < ejercicioEstudiantesArray.length; i++) {
         }
         
         // Validar si el estudiante tiene un acudiente con un número de celular
-       /*  if (estudiante.Acudientes && estudiante.Acudientes.celular) {
+         if (estudiante.Acudientes && estudiante.Acudientes.celular) {
             sendSms(`+57${estudiante.Acudientes.celular}`, `Estimado Acudiente el estudiante ${estudiante.name} debe, la actividad ${element._doc.task_title} que pronto vencera`);
-        } */
+        } 
     }
 }
 
