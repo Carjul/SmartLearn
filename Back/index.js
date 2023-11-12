@@ -14,4 +14,6 @@ const job = schedule.scheduleJob('59 23 * * *', function(){
   buscarTarea()
 });
 
+//console.log(job)
+
   
