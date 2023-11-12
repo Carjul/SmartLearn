@@ -19,21 +19,37 @@ const sendMail = async (correo,nombreAct) => {
     });
 }
 
-const sendSms = (num, message) => {
- 
-    client.messages
-        .create({
-            from: '+18174899770',
-            to: num,
-            body: message,
-        })
-        .then(message => {
-            console.log(message.sid);
-        })
-        .catch(error => {
-            console.error("Error al enviar el SMS:", error);
-        });
+const sendSms = (num, mensaje) => {
+    
 
+  const apiSecret = "d8d3d81584defe35efbe4dd773500081bd829c65";
+
+  const message = {
+    secret: apiSecret,
+    mode: "devices",
+    device: "00000000-0000-0000-dbc8-92cc3dd5d817",
+    sim: 1,
+    priority: 1,
+    phone: num,
+    message: mensaje,
+  };
+  
+  const url = "https://sms.uncgateway.com/api/send/sms";
+  
+  const queryString = Object.keys(message)
+    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(message[key]))
+    .join("&");
+  
+  fetch(`${url}?${queryString}`, {
+    method: "POST",
+  })
+    .then(response => response.json())
+    .then(result => {
+      console.log(result);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
 }
  
 function calcularDiferenciaDeDias(fechaObjetivo) {
@@ -123,4 +139,4 @@ for (let i = 0; i < ejercicioEstudiantesArray.length; i++) {
 
 
 
-module.exports = { buscarTarea }
+module.exports = { buscarTarea,sendSms }
