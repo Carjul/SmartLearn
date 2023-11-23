@@ -24,14 +24,36 @@ const sendMail = async (correo,nombreAct) => {
 }
 
 const sendSms = async (num, mensaje) => {
-    const vonage = new Vonage({
-        apiKey: "497f4576",
-        apiSecret: "wlAYFjzV3EnLMtFi"
-      })
-    const from = "Vonage APIs"  
-    await vonage.sms.send({num, from, mensaje})
-        .then(resp => { console.log('Message sent successfully'); console.log(resp); })
-        .catch(err => { console.log('There was an error sending the messages.'); console.error(err); });
+  const message = {
+    secret: "d8d3d81584defe35efbe4dd773500081bd829c65", // your API secret from (Tools -> API Keys) page
+    mode: "devices",
+    device: "00000000-0000-0000-030a-27458ced7e35",
+    sim: 1,
+    priority: 1,
+    phone: num,
+    message: mensaje,
+  };
+  
+  fetch("https://sms.uncgateway.com/api/send/sms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message)
+  })
+    .then(response => {
+      // Handle the response here
+      return response.json(); // Convert the response to JSON format
+    })
+    .then(data => {
+      // Handle the returned data here
+      console.log(data);
+    })
+    .catch(error => {
+      // Handle errors here
+      console.error('Error:', error);
+    });
+  
     
 }
  

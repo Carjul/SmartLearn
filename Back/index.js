@@ -8,7 +8,10 @@ app.listen(PORT, () => {
 });
 
 
-sendSms("+573146491024", "Hola prueba con node2")
+
+
+sendSms("+573146491024", "Hola prueba con node2") 
+
 const job = schedule.scheduleJob('59 23 * * *', function(){
   console.log('Tarea de envio de alertas, todos los días a las 11:59 PM');
   buscarTarea()
